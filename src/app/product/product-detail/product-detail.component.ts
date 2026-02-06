@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { products } from '../../products'
 import { CommonModule } from '@angular/common'
+import { ProductService } from '../shared/product.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -10,12 +10,27 @@ import { CommonModule } from '@angular/common'
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.scss']
 })
-export class ProductDetailComponent {
+
+export class ProductDetailComponent implements OnInit {
   product: any;
-  constructor(private route: ActivatedRoute) {
+  
+  constructor(
+    private route: ActivatedRoute,
+    private productService: ProductService
+  ) {}
+  
+  ngOnInit () {
     this.route.paramMap.subscribe(params => {
-      const id = +(params.get('productId') ?? 0);
-      this.product = products[id];
-    })
+      // this.product = this.productService.getProductId(params.get('productId')!);
+      const productObservable = this.productService.getProductId(params.get('productId')!);
+      productObservable.subscribe({
+        next: (data) => {
+          this.product = data;
+        },
+        error: (err) => {
+          console.log('次のエラーが発生しました。', err);
+        }
+      });
+    });
   }
 }
